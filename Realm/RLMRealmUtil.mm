@@ -18,7 +18,14 @@
 
 #import "RLMRealmUtil.hpp"
 
-#import "RLMRealm_Private.hpp"
+#import "RLMObservation.hpp"
+#import "RLMRealm_Private.h"
+#import "RLMUtil.hpp"
+
+#import <Realm/RLMConstants.h>
+#import <Realm/RLMSchema.h>
+
+#import "realm_delegate.hpp"
 
 #import <map>
 #import <mutex>
@@ -173,7 +180,16 @@ public:
         [_realm sendNotifications:RLMRealmRefreshRequiredNotification];
     }
 
-    void did_change() override {
+    std::vector<ObserverState> get_observed_rows() override {
+        return RLMGetObservedRows(_realm.schema.objectSchema);
+    }
+
+    void will_change(std::vector<ObserverState> const& observed, std::vector<void*> const& invalidated) override {
+        RLMWillChange(observed, invalidated);
+    }
+
+    void did_change(std::vector<ObserverState> const& observed, std::vector<void*> const& invalidated) override {
+        RLMDidChange(observed, invalidated);
         [_realm sendNotifications:RLMRealmDidChangeNotification];
     }
 

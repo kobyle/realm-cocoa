@@ -531,6 +531,8 @@ static void CheckReadWrite(RLMRealm *realm, NSString *msg=@"Cannot write to a re
         @throw RLMException(@"The notification block should not be nil");
     }
 
+    _realm->read_group();
+
     if (!_notificationHandlers) {
         _notificationHandlers = [NSHashTable hashTableWithOptions:NSPointerFunctionsWeakMemory];
     }

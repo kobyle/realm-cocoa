@@ -79,4 +79,6 @@ FOUNDATION_EXTERN void RLMRealmAddPathSettingsToConfiguration(RLMRealmConfigurat
 - (void)unregisterEnumerator:(RLMFastEnumerator *)enumerator;
 
 - (void)sendNotifications:(NSString *)notification;
+- (void)notify;
+- (void)verifyThread;
 @end
