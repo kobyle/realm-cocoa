@@ -531,6 +531,8 @@ static void CheckReadWrite(RLMRealm *realm, NSString *msg=@"Cannot write to a re
         @throw RLMException(@"The notification block should not be nil");
     }
 
+    _realm->read_group();
+
     if (!_notificationHandlers) {
         _notificationHandlers = [NSHashTable hashTableWithOptions:NSPointerFunctionsWeakMemory];
     }
@@ -628,7 +630,15 @@ static void CheckReadWrite(RLMRealm *realm, NSString *msg=@"Cannot write to a re
         NSLog(@"WARNING: An RLMRealm instance was invalidated during a write "
               "transaction and all pending changes have been rolled back.");
     }
+
+    for (RLMObjectSchema *objectSchema in _schema.objectSchema) {
+        for (RLMObservationInfo *info : objectSchema->_observedObjects) {
+            info->willChange(RLMInvalidatedKey);
+        }
+    }
+
     _realm->invalidate();
+
     for (RLMObjectSchema *objectSchema in _schema.objectSchema) {
         for (RLMObservationInfo *info : objectSchema->_observedObjects) {
             info->didChange(RLMInvalidatedKey);
