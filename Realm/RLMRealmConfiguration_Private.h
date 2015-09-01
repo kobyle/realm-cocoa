@@ -22,6 +22,7 @@
 
 @interface RLMRealmConfiguration ()
 
+@property (nonatomic, readwrite) bool cache;
 @property (nonatomic, readwrite) bool dynamic;
 @property (nonatomic, copy) RLMSchema *customSchema;
 
