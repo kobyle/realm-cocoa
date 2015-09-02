@@ -116,6 +116,16 @@ RLM_ARRAY_TYPE(PrimaryIntObject);
 }
 @end
 
+@interface PrimaryNullableIntObject : RLMObject
+@property NSNumber<RLMInt> *optIntCol;
+@end
+
+@implementation PrimaryNullableIntObject
++ (NSString *)primaryKey {
+    return @"optIntCol";
+}
+@end
+
 @interface PrimaryStringObjectWrapper : RLMObject
 @property PrimaryStringObject *primaryStringObject;
 @end
@@ -1602,6 +1612,15 @@ RLM_ARRAY_TYPE(PrimaryEmployeeObject);
     XCTAssertThrows([PrimaryInt64Object createInDefaultRealmWithValue:(@[@(1LL << 40)])], @"Duplicate primary key should throw");
     XCTAssertThrows(obj2.int64Col = 1LL << 41, @"Setting primary key should throw");
 
+    [PrimaryNullableIntObject createInDefaultRealmWithValue:@[@1]];
+    PrimaryNullableIntObject *obj3 = [PrimaryNullableIntObject createInDefaultRealmWithValue:(@{@"optIntCol": @2})];
+    XCTAssertThrows([PrimaryNullableIntObject createInDefaultRealmWithValue:(@[@1])], @"Duplicate primary key should throw");
+    XCTAssertThrows(obj3.optIntCol = @2, @"Setting primary key should throw");
+    XCTAssertThrows(obj3.optIntCol = nil, @"Setting primary key should throw");
+    PrimaryNullableIntObject *obj4 = [PrimaryNullableIntObject createInDefaultRealmWithValue:@[NSNull.null]];
+    XCTAssertThrows(obj4.optIntCol = @2, @"Setting primary key should throw");
+    XCTAssertThrows(obj4.optIntCol = nil, @"Setting primary key should throw");
+
     [[RLMRealm defaultRealm] commitWriteTransaction];
 }
 
@@ -1722,6 +1741,7 @@ RLM_ARRAY_TYPE(PrimaryEmployeeObject);
 #ifdef REALM_ENABLE_NULL
     PrimaryStringObject *nullStrObj = [PrimaryStringObject createInDefaultRealmWithValue:@[NSNull.null, @0]];
     PrimaryIntObject *intObj = [PrimaryIntObject createInDefaultRealmWithValue:@[@0]];
+    PrimaryNullableIntObject *nullIntObj = [PrimaryNullableIntObject createInDefaultRealmWithValue:@[@0]];
 #endif
     [RLMRealm.defaultRealm commitWriteTransaction];
 
@@ -1734,6 +1754,8 @@ RLM_ARRAY_TYPE(PrimaryEmployeeObject);
     // wrong PK type
     XCTAssertThrows([PrimaryStringObject objectForPrimaryKey:@0]);
     XCTAssertThrows([PrimaryIntObject objectForPrimaryKey:@""]);
+    XCTAssertThrows([PrimaryIntObject objectForPrimaryKey:@""]);
+    XCTAssertThrows([PrimaryIntObject objectForPrimaryKey:NSNull.null]);
 
     // no object with key
     XCTAssertNil([PrimaryStringObject objectForPrimaryKey:@"bad key"]);
@@ -1744,6 +1766,7 @@ RLM_ARRAY_TYPE(PrimaryEmployeeObject);
 #ifdef REALM_ENABLE_NULL
     XCTAssertEqualObjects(nullStrObj, [PrimaryStringObject objectForPrimaryKey:NSNull.null]);
     XCTAssertEqualObjects(intObj, [PrimaryIntObject objectForPrimaryKey:@0]);
+    XCTAssertEqualObjects(nullIntObj, [PrimaryNullableIntObject objectForPrimaryKey:NSNull.null]);
 #endif
 }
 
